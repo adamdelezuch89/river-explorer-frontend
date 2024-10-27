@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>River Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        // Initialize the map
+        var map = L.map('map').setView([0, 0], 2);
+
+        // Add a tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Function to fetch and display rivers
+        function fetchRivers() {
+            // Get the current map bounds
+            var bounds = map.getBounds();
+            var min_x = bounds.getWest();
+            var min_y = bounds.getSouth();
+            var max_x = bounds.getEast();
+            var max_y = bounds.getNorth();
+            var zoom = map.getZoom(); // Get the current zoom level
+
+            // Fetch river data from the API, including the zoom level
+            fetch(`http://localhost:8000/api/river-map?min_x=${min_x}&min_y=${min_y}&max_x=${max_x}&max_y=${max_y}&zoom=${zoom}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Clear existing layers
+                    map.eachLayer((layer) => {
+                        if (layer instanceof L.GeoJSON) {
+                            map.removeLayer(layer);
+                        }
+                    });
+
+                    // Add river segments to the map
+                    data.forEach(river => {
+                        var geojson = JSON.parse(river.geometry);
+                        L.geoJSON(geojson, {
+                            onEachFeature: (feature, layer) => {
+                                layer.bindTooltip(river.name);
+                            }
+                        }).addTo(map);
+                    });
+                })
+                .catch(error => console.error('Error fetching river data:', error));
+        }
+
+        // Debounced fetch function
+        const debouncedFetchRivers = debounce(fetchRivers, 300);
+
+        // Fetch rivers when the map is moved or zoomed
+        map.on('moveend', debouncedFetchRivers);
+
+        // Initial fetch
+        fetchRivers();
+    </script>
+</body>
+</html>

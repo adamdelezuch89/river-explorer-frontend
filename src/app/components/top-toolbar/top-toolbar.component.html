@@ -1,0 +1,22 @@
+<mat-toolbar color="primary">
+    <div class="toolbar-container">
+      <!-- Left side - Title -->
+      <div class="title-section">
+        <button mat-icon-button (click)="toggleMenu()" class="menu-button">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <span class="title" routerLink="/">My App</span>
+      </div>
+
+      <!-- Right side - Auth buttons -->
+      <div class="auth-buttons">
+        <button mat-button routerLink="/login">
+          <mat-icon>login</mat-icon>
+          Login
+        </button>
+        <button mat-raised-button color="accent" routerLink="/register">
+          Register
+        </button>
+      </div>
+    </div>
+  </mat-toolbar>
