@@ -1,4 +1,3 @@
-
 // services/river.service.ts remains the same, but here it is for completeness:
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -22,6 +21,7 @@ export class RiverService {
       zoom: zoom.toString()
     };
 
+    console.log('RiverMap API Request:', { url: this.apiUrl, params });
     return this.http.get<River[]>(this.apiUrl, { params });
   }
 }
